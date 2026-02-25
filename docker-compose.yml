@@ -1,0 +1,39 @@
+services:
+  api:
+    build: .
+    env_file: .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  worker:
+    build: .
+    env_file: .env
+    command: celery -A worker.celery_app.celery worker -l INFO
+    depends_on:
+      - db
+      - redis
+
+  beat:
+    build: .
+    env_file: .env
+    command: celery -A worker.celery_app.celery beat -l INFO
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: billingbot
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
